@@ -3006,12 +3006,15 @@ class InputPhoneNumber {
         this.#reset.addEventListener('click', this.#resetFunc);
     }
     showPhoneNumber() {
+        let _temp = this.#phoneNumLabel.innerHTML;
         this.#phoneNumLabel.innerHTML = `입력된 회원님의 전화번호: ${this.#input.value}`;
-        this.#phoneNumLabel.afterChange = '';
-        this.#statusLabel.afterChange = this.#statusLabel.innerHTML;
-        this.#statusLabel.innerHTML = '다시 입력하려면 reset 버튼을 눌러주세요!';
-        this.#noticeLabel.afterChange = '';
+        this.#phoneNumLabel.afterChange = _temp;
+        _temp = this.#statusLabel.innerHTML;
+        this.#statusLabel.innerHTML = _temp;
+        this.#statusLabel.afterChange = _temp;
+        _temp = this.#noticeLabel.innerHTML;
         this.#noticeLabel.innerHTML = '화면을 캡쳐하신 후, 매장 주문 시 보여주세요!';
+        this.#noticeLabel.afterChange = _temp;
         this.#reset.style.display = '';
     }
      #doReset() {
@@ -3041,6 +3044,10 @@ const couponType = {
 const listMap = {
     'family-event': '어버이날 쿠폰',
     'family-event-c': '어린이날 쿠폰'
+};
+const priceMap = {
+    'family-event': '1000 원',
+    'family-event-c': '1000 원'
 };
 class StatusManager {
     #now;
@@ -3085,7 +3092,7 @@ class StatusManager {
         return couponType[this.#now];
     }
     get couponName() {
-        return listMap[this.#now];
+        return listMap[this.#now] + priceMap[this.#now];
     }
 }
 const createAPI = (phone, type)=>{
@@ -3109,15 +3116,17 @@ document.addEventListener('DOMContentLoaded', function() {
         container.appendChild(textl);
         const api = createAPI(ipn.value, statusMan.couponType);
         const qrf = async (api1)=>{
-            const QRImg = await createQRImage('http://172.30.1.15:5000/' + api1);
+            const QRImg = await createQRImage('http://172.30.1.23:5000/' + api1);
             container.appendChild(QRImg);
             qr = QRImg;
+            lc.style.display = 'none';
         };
         qrf(api);
     };
     const hideQRcode = ()=>{
         container.removeChild(textl);
         container.removeChild(qr);
+        lc.style.display = '';
     };
     const statusMan = new StatusManager();
     statusMan.registerBackgroundImage(background);
