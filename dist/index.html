@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="kr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Godic</title>
+    <link rel="stylesheet" href="./style.css">
+    <script src='./main.js' type="module"></script>
+</head>
+
+<body>
+    <h1 id='notice'>회원님의 전화번호를 입력해주세요</h1>
+    <h2 id='ph-label' style='color:red'>회원 미등록시 <span style="color: gray;">혹은</span> 1회 사용시 사용불가 <span style="color: gray;">이 경우 qrcode가 생성되어도 사용할 수는 없습니다. <span style="color: blue;">원하는 쿠폰 종류를 선택해주세요.</span></span></h2>
+    <div id='l-con'></div>
+    <div id="container">
+        <div class="card">
+            <label class="input">
+                <input class="input__field" type="text" id="ph-input" placeholder=" " />
+                <span class="input__label" id="ph-status">전화번호를 입력해주세요!</span>
+            </label>
+            <div class="button-group">
+                <button id="ph-submit">쿠폰 받기</button>
+                <button id="ph-reset" type="reset">Reset</button>
+            </div>
+        </div>
+    </div>
+    <div id="bg-container">
+        <img id="bg">
+    </div>
+</body>
+
+</html>
