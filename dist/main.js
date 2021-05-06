@@ -2918,6 +2918,71 @@ const createQRImage = async (str)=>{
     imgElement.id = 'qr';
     return imgElement;
 };
+const createAPI = (phone, type)=>{
+    return `register/${phone}/${type}`;
+};
+const bgImgMap = {
+    'family-event': './images/family-event.png',
+    'family-event-c': './images/family-event.png'
+};
+const couponType = {
+    'family-event': 'family',
+    'family-event-c': 'family-c'
+};
+const listMap = {
+    'family-event': '어버이날 쿠폰',
+    'family-event-c': '어린이날 쿠폰'
+};
+const priceMap = {
+    'family-event': '1000원 할인',
+    'family-event-c': '1000원 할인'
+};
+class StatusManager {
+    _now;
+    _bgImg;
+    _con;
+    constructor(){
+        this._now = '';
+    }
+    registerBackgroundImage(bgImg) {
+        this._bgImg = bgImg;
+    }
+    registerListContainer(listContainer) {
+        this._con = listContainer;
+        this._setListContainer();
+    }
+    _setListContainer() {
+        if (this._con) {
+            for(let key in listMap){
+                this._con.appendChild(this._createButton(listMap[key], key));
+            }
+        }
+    }
+    _createButton(buttonLabel, keyVal) {
+        const b = document.createElement('button');
+        const _this = this;
+        b.addEventListener('click', function() {
+            _this.now = keyVal;
+        });
+        b.innerHTML = buttonLabel;
+        return b;
+    }
+    get now() {
+        return this._now;
+    }
+    set now(newVal) {
+        this._now = newVal;
+        if (this._bgImg) {
+            this._bgImg.src = bgImgMap[this._now];
+        }
+    }
+    get couponType() {
+        return couponType[this._now];
+    }
+    get couponName() {
+        return listMap[this._now] + ' ' + priceMap[this._now];
+    }
+}
 const validatePhoneNumberFunc = (input)=>{
     return ()=>{
         const toAllowedPhoneNumber = (pN)=>{
@@ -2939,165 +3004,100 @@ const validatePhoneNumberFunc = (input)=>{
     };
 };
 class InputPhoneNumber {
-    #input;
-    #submit;
-    #reset;
-    #submitFunc;
-    #inputFunc;
-    #submitFuncKeyboard;
-    #resetFunc;
-    #noticeLabel;
-    #phoneNumLabel;
-    #statusLabel;
+    _input;
+    _submit;
+    _reset;
+    _submitFunc;
+    _inputFunc;
+    _submitFuncKeyboard;
+    _resetFunc;
+    _noticeLabel;
+    _phoneNumLabel;
+    _statusLabel;
     get value() {
-        return this.#input.value.replace(/-/g, '');
+        return this._input.value.replace(/-/g, '');
     }
     constructor(inputElement, submit, reset, label){
-        this.#phoneNumLabel = label.phoneNum;
-        this.#statusLabel = label.status;
-        this.#noticeLabel = label.notice;
-        this.#input = inputElement;
-        this.#submit = submit.button;
-        this.#reset = reset.ele;
-        this.#inputFunc = validatePhoneNumberFunc(this.#input);
-        this.#submitFunc = submit.listener;
-        this.#resetFunc = reset.func;
-        this.#submitFuncKeyboard = ()=>{
+        this._phoneNumLabel = label.phoneNum;
+        this._statusLabel = label.status;
+        this._noticeLabel = label.notice;
+        this._input = inputElement;
+        this._submit = submit.button;
+        this._reset = reset.ele;
+        this._inputFunc = validatePhoneNumberFunc(this._input);
+        this._submitFunc = submit.listener;
+        this._resetFunc = reset.func;
+        this._submitFuncKeyboard = ()=>{
         };
-        this.#do(true);
+        this._do(true);
     }
-     #do(start) {
-        this.#setSubmmiter(start);
+    _do(start) {
+        this._setSubmmiter(start);
         if (start) {
-            this.#submitFuncKeyboard = (keyboard)=>{
+            this._submitFuncKeyboard = (keyboard)=>{
                 if (keyboard?.key === 'Enter') {
-                    this.#submitFunc.bind(this)();
+                    this._submitFunc.bind(this)();
                 }
             };
         }
-        this.#setInputer();
-        this.#setReseter(start);
+        this._setInputer();
+        this._setReseter(start);
     }
-     #setInputer() {
-        this.#input.addEventListener('keyup', this.#inputFunc);
-        this.#input.addEventListener('keyup', this.#submitFuncKeyboard);
+    _setInputer() {
+        this._input.addEventListener('keyup', this._inputFunc);
+        this._input.addEventListener('keyup', this._submitFuncKeyboard);
     }
-     #setSubmmiter(start) {
+    _setSubmmiter(start) {
         if (start) {
-            const _onlySubmit = this.#submitFunc;
-            this.#submitFunc = ()=>{
+            const _onlySubmit = this._submitFunc;
+            this._submitFunc = ()=>{
                 _onlySubmit();
                 this.showPhoneNumber.bind(this)();
-                this.#clearSelf.bind(this)();
+                this._clearSelf.bind(this)();
                 alert("화면을 캡쳐해서 주문하실 때 보여주세요!");
             };
         }
-        this.#submit.addEventListener('click', this.#submitFunc);
+        this._submit.addEventListener('click', this._submitFunc);
     }
-     #setReseter(start) {
+    _setReseter(start) {
         if (start) {
-            const _onlyReset = this.#resetFunc;
-            this.#resetFunc = ()=>{
+            const _onlyReset = this._resetFunc;
+            this._resetFunc = ()=>{
                 _onlyReset();
-                this.#doReset.bind(this)();
+                this._doReset.bind(this)();
             };
         }
-        this.#reset.style.display = 'none';
-        this.#reset.addEventListener('click', this.#resetFunc);
+        this._reset.style.display = 'none';
+        this._reset.addEventListener('click', this._resetFunc);
     }
     showPhoneNumber() {
-        let _temp = this.#phoneNumLabel.innerHTML;
-        this.#phoneNumLabel.innerHTML = `입력된 회원님의 전화번호: ${this.#input.value}`;
-        this.#phoneNumLabel.afterChange = _temp;
-        _temp = this.#statusLabel.innerHTML;
-        this.#statusLabel.innerHTML = '잘못입력하셨다면 reset 버튼을 누르세요';
-        this.#statusLabel.afterChange = _temp;
-        _temp = this.#noticeLabel.innerHTML;
-        this.#noticeLabel.innerHTML = '화면을 캡쳐하신 후, 매장 주문 시 보여주세요!';
-        this.#noticeLabel.afterChange = _temp;
-        this.#reset.style.display = '';
+        let _temp = this._phoneNumLabel.innerHTML;
+        this._phoneNumLabel.innerHTML = `입력된 회원님의 전화번호: ${this._input.value}`;
+        this._phoneNumLabel.afterChange = _temp;
+        _temp = this._statusLabel.innerHTML;
+        this._statusLabel.innerHTML = '잘못입력하셨다면 reset 버튼을 누르세요';
+        this._statusLabel.afterChange = _temp;
+        _temp = this._noticeLabel.innerHTML;
+        this._noticeLabel.innerHTML = '화면을 캡쳐하신 후, 매장 주문 시 보여주세요!';
+        this._noticeLabel.afterChange = _temp;
+        this._reset.style.display = '';
     }
-     #doReset() {
-        this.#do();
-        this.#phoneNumLabel.innerHTML = this.#phoneNumLabel.afterChange;
-        this.#statusLabel.innerHTML = this.#statusLabel.afterChange;
-        this.#noticeLabel.innerHTML = this.#noticeLabel.afterChange;
-        this.#input.style.display = '';
-        this.#submit.style.display = '';
+    _doReset() {
+        this._do();
+        this._phoneNumLabel.innerHTML = this._phoneNumLabel.afterChange;
+        this._statusLabel.innerHTML = this._statusLabel.afterChange;
+        this._noticeLabel.innerHTML = this._noticeLabel.afterChange;
+        this._input.style.display = '';
+        this._submit.style.display = '';
     }
-     #clearSelf() {
-        this.#input.removeEventListener('keyup', this.#inputFunc);
-        this.#submit.removeEventListener('click', this.#submitFunc);
-        this.#input.removeEventListener('keyup', this.#submitFunc);
-        this.#input.style.display = 'none';
-        this.#submit.style.display = 'none';
-    }
-}
-const bgImgMap = {
-    'family-event': './images/family-event.png',
-    'family-event-c': './images/family-event.png'
-};
-const couponType = {
-    'family-event': 'family',
-    'family-event-c': 'family-c'
-};
-const listMap = {
-    'family-event': '어버이날 쿠폰',
-    'family-event-c': '어린이날 쿠폰'
-};
-const priceMap = {
-    'family-event': '1000 원',
-    'family-event-c': '1000 원'
-};
-class StatusManager {
-    #now;
-    #bgImg;
-    #con;
-    constructor(){
-        this.#now = '';
-    }
-    registerBackgroundImage(bgImg) {
-        this.#bgImg = bgImg;
-    }
-    registerListContainer(listContainer) {
-        this.#con = listContainer;
-        this.#setListContainer();
-    }
-     #setListContainer() {
-        if (this.#con) {
-            for(let key in listMap){
-                this.#con.appendChild(this.#createButton(listMap[key], key));
-            }
-        }
-    }
-     #createButton(buttonLabel, keyVal) {
-        const b = document.createElement('button');
-        const _this = this;
-        b.addEventListener('click', function() {
-            _this.now = keyVal;
-        });
-        b.innerHTML = buttonLabel;
-        return b;
-    }
-    get now() {
-        return this.#now;
-    }
-    set now(newVal) {
-        this.#now = newVal;
-        if (this.#bgImg) {
-            this.#bgImg.src = bgImgMap[this.#now];
-        }
-    }
-    get couponType() {
-        return couponType[this.#now];
-    }
-    get couponName() {
-        return listMap[this.#now] + priceMap[this.#now];
+    _clearSelf() {
+        this._input.removeEventListener('keyup', this._inputFunc);
+        this._submit.removeEventListener('click', this._submitFunc);
+        this._input.removeEventListener('keyup', this._submitFunc);
+        this._input.style.display = 'none';
+        this._submit.style.display = 'none';
     }
 }
-const createAPI = (phone, type)=>{
-    return `register/${phone}/${type}`;
-};
 document.addEventListener('DOMContentLoaded', function() {
     const i = document.getElementById('ph-input');
     const s = document.getElementById('ph-submit');
