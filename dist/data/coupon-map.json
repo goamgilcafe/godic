@@ -1,0 +1,20 @@
+{
+    "family-event": {
+        "img": "./images/family-event.png",
+        "type": "family",
+        "label": "어버이날 쿠폰",
+        "price": 1000,
+        "priceLabel": "1000원 할인",
+        "start": "2021-05-01",
+        "end": "2021-05-31"
+    },
+    "family-event-c": {
+        "img": "./images/family-event.png",
+        "type": "family-c",
+        "label": "어린이날 쿠폰",
+        "price": 1000,
+        "priceLabel": "1000원 할인",
+        "start": "2021-05-01",
+        "end": "2021-05-31"
+    }
+}

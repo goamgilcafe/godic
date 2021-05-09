@@ -2910,7 +2910,7 @@ async function qrcode1(text, options) {
     const margin = Math.floor((size - qr.getModuleCount() * cellsize) / 2);
     return qr.createDataURL(cellsize, margin, size);
 }
-const createQRImage = async (str)=>{
+const createQRImage1 = async (str)=>{
     const qr = await qrcode1(str);
     const qrstring = qr.toString();
     const imgElement = document.createElement('img');
@@ -2918,52 +2918,104 @@ const createQRImage = async (str)=>{
     imgElement.id = 'qr';
     return imgElement;
 };
-const createAPI = (phone, type)=>{
+const createAPI1 = (phone, type)=>{
     return `register/${phone}/${type}`;
 };
-const bgImgMap = {
-    'family-event': './images/family-event.png',
-    'family-event-c': './images/family-event.png'
+const betweenDate = (startDate, endDate, checkDate)=>{
+    let cd;
+    if (checkDate) {
+        cd = new Date(checkDate).setHours(0, 0, 0, 0);
+    } else {
+        cd = new Date().setHours(0, 0, 0, 0);
+    }
+    const sd = new Date(startDate).setHours(0, 0, 0, 0);
+    const ed = new Date(endDate).setHours(0, 0, 0, 0);
+    if (cd <= ed && cd >= sd) {
+        return true;
+    }
+    return false;
 };
-const couponType = {
-    'family-event': 'family',
-    'family-event-c': 'family-c'
-};
-const listMap = {
-    'family-event': '어버이날 쿠폰',
-    'family-event-c': '어린이날 쿠폰'
-};
-const priceMap = {
-    'family-event': '1000원 할인',
-    'family-event-c': '1000원 할인'
-};
-class StatusManager {
+class StatusManager1 {
     _now;
-    _bgImg;
     _con;
+    _bgImg;
+    _map = {
+    };
+    _buttonFunc = [];
+    _additionalCallback = ()=>{
+    };
+    get additionalCallback() {
+        return this._additionalCallback;
+    }
+    set additionalCallback(newVal) {
+        this._additionalCallback = newVal;
+    }
     constructor(){
         this._now = '';
     }
+    registerCouponMap = async (mapPath)=>{
+        const g = async ()=>{
+            const map = await fetch(mapPath);
+            return map.json();
+        };
+        const g2 = async ()=>{
+            this._map = await g();
+        };
+        await g2();
+    };
     registerBackgroundImage(bgImg) {
-        this._bgImg = bgImg;
+        if (bgImg) {
+            this._bgImg = bgImg;
+        } else {
+            throw new Error('해당 배경 이미지는 존재하지 않음!');
+        }
     }
     registerListContainer(listContainer) {
-        this._con = listContainer;
-        this._setListContainer();
+        if (!this._con) {
+            this._con = listContainer;
+            this._setListContainer();
+        } else {
+            throw new Error("이미 등록 되어있음!");
+        }
+    }
+    unregisterBackgroundImage() {
+        if (this._bgImg) {
+            this._bgImg.src = "";
+            this._bgImg = undefined;
+        }
+    }
+    unregisterListContainer() {
+        if (this._con) {
+            const len = this._buttonFunc.length;
+            for(let i = len - 1; i > -1; i--){
+                this._buttonFunc[i].dom.removeEventListener('click', this._buttonFunc[i].listener);
+                this._buttonFunc[i].dom.parentElement?.removeChild(this._buttonFunc[i].dom);
+                this._buttonFunc.splice(i, 1);
+            }
+            this._con = undefined;
+        }
     }
     _setListContainer() {
         if (this._con) {
-            for(let key in listMap){
-                this._con.appendChild(this._createButton(listMap[key], key));
+            for(const key in this._map){
+                if (betweenDate(this._map[key].start, this._map[key].end)) {
+                    if (this._map[key].start) this._con.appendChild(this._createButton(`${this._map[key].label} | ${this._map[key].priceLabel}`, key));
+                }
             }
         }
     }
     _createButton(buttonLabel, keyVal) {
         const b = document.createElement('button');
-        const _this = this;
-        b.addEventListener('click', function() {
-            _this.now = keyVal;
+        b.className = 'list-button';
+        const buttonFunc = ()=>{
+            this.now = keyVal;
+        };
+        this._buttonFunc.push({
+            dom: b,
+            listener: buttonFunc,
+            id: keyVal
         });
+        b.addEventListener('click', buttonFunc);
         b.innerHTML = buttonLabel;
         return b;
     }
@@ -2971,16 +3023,42 @@ class StatusManager {
         return this._now;
     }
     set now(newVal) {
-        this._now = newVal;
-        if (this._bgImg) {
-            this._bgImg.src = bgImgMap[this._now];
+        if (this._now === newVal) {
+            return;
         }
+        if (newVal === '$_calendar') {
+            if (this._bgImg) {
+                for(const key in this._map){
+                    if (betweenDate(this._map[key].start, this._map[key].end)) {
+                        this._bgImg.src = this._map[key].img;
+                        break;
+                    }
+                }
+            }
+        } else {
+            if (this._bgImg) {
+                const newPath = this._map[newVal].img;
+                if (this._map[this._now]?.img !== newPath) {
+                    this._bgImg.src = newPath;
+                }
+            }
+        }
+        const len = this._buttonFunc.length;
+        for(let i = 0; i < len; i++){
+            if (this._buttonFunc[i].id == newVal) {
+                this._buttonFunc[i].dom.classList.add('selected');
+            } else {
+                this._buttonFunc[i].dom.classList.remove('selected');
+            }
+        }
+        this._now = newVal;
+        this._additionalCallback();
     }
     get couponType() {
-        return couponType[this._now];
+        return this._map[this._now].type;
     }
     get couponName() {
-        return listMap[this._now] + ' ' + priceMap[this._now];
+        return `${this._map[this._now].label} | ${this._map[this._now].priceLabel}`;
     }
 }
 const validatePhoneNumberFunc = (input)=>{
@@ -3003,7 +3081,7 @@ const validatePhoneNumberFunc = (input)=>{
         input.prevVal = input.value;
     };
 };
-class InputPhoneNumber {
+class InputPhoneNumber1 {
     _input;
     _submit;
     _reset;
@@ -3022,32 +3100,32 @@ class InputPhoneNumber {
         this._statusLabel = label.status;
         this._noticeLabel = label.notice;
         this._input = inputElement;
-        this._submit = submit.button;
-        this._reset = reset.ele;
+        this._submit = submit.dom;
+        this._reset = reset.dom;
         this._inputFunc = validatePhoneNumberFunc(this._input);
         this._submitFunc = submit.listener;
-        this._resetFunc = reset.func;
+        this._resetFunc = reset.listener;
         this._submitFuncKeyboard = ()=>{
         };
         this._do(true);
     }
     _do(start) {
-        this._setSubmmiter(start);
+        this._setSubmitter(start);
         if (start) {
             this._submitFuncKeyboard = (keyboard)=>{
                 if (keyboard?.key === 'Enter') {
-                    this._submitFunc.bind(this)();
+                    this._submitFunc.bind(this)(keyboard);
                 }
             };
         }
         this._setInputer();
-        this._setReseter(start);
+        this._setResetter(start);
     }
     _setInputer() {
         this._input.addEventListener('keyup', this._inputFunc);
         this._input.addEventListener('keyup', this._submitFuncKeyboard);
     }
-    _setSubmmiter(start) {
+    _setSubmitter(start) {
         if (start) {
             const _onlySubmit = this._submitFunc;
             this._submitFunc = ()=>{
@@ -3059,7 +3137,7 @@ class InputPhoneNumber {
         }
         this._submit.addEventListener('click', this._submitFunc);
     }
-    _setReseter(start) {
+    _setResetter(start) {
         if (start) {
             const _onlyReset = this._resetFunc;
             this._resetFunc = ()=>{
@@ -3098,49 +3176,7 @@ class InputPhoneNumber {
         this._submit.style.display = 'none';
     }
 }
-document.addEventListener('DOMContentLoaded', function() {
-    const i = document.getElementById('ph-input');
-    const s = document.getElementById('ph-submit');
-    const h = document.getElementById('ph-label');
-    const phstatus = document.getElementById('ph-status');
-    const r = document.getElementById('ph-reset');
-    const imglabel = document.getElementById('img-refer');
-    const container = document.getElementById('container');
-    const background = document.getElementById('bg');
-    const n = document.getElementById('notice');
-    const lc = document.getElementById('l-con');
-    const textl = document.createElement('h3');
-    let qr;
-    const showQRcode = ()=>{
-        textl.innerHTML = statusMan.couponName;
-        container.appendChild(textl);
-        const api = createAPI(ipn.value, statusMan.couponType);
-        const qrf = async (api1)=>{
-            const QRImg = await createQRImage('http://172.30.1.23:5000/' + api1);
-            container.appendChild(QRImg);
-            qr = QRImg;
-            lc.style.display = 'none';
-        };
-        qrf(api);
-    };
-    const hideQRcode = ()=>{
-        container.removeChild(textl);
-        container.removeChild(qr);
-        lc.style.display = '';
-    };
-    const statusMan = new StatusManager();
-    statusMan.registerBackgroundImage(background);
-    statusMan.registerListContainer(lc);
-    statusMan.now = 'family-event';
-    const ipn = new InputPhoneNumber(i, {
-        button: s,
-        listener: showQRcode
-    }, {
-        ele: r,
-        func: hideQRcode
-    }, {
-        notice: n,
-        phoneNum: h,
-        status: phstatus
-    });
-});
+export { createQRImage1 as createQRImage };
+export { createAPI1 as createAPI };
+export { StatusManager1 as StatusManager };
+export { InputPhoneNumber1 as InputPhoneNumber };
