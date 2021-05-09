@@ -2919,7 +2919,7 @@ const createQRImage1 = async (str)=>{
     return imgElement;
 };
 const createAPI1 = (phone, type)=>{
-    return `register/${phone}/${type}`;
+    return `use/${phone}/${type}`;
 };
 const betweenDate = (startDate, endDate, checkDate)=>{
     let cd;
