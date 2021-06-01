@@ -2918,8 +2918,8 @@ const createQRImage1 = async (str)=>{
     imgElement.id = 'qr';
     return imgElement;
 };
-const createAPI1 = (phone, type)=>{
-    return `use/${phone}/${type}`;
+const createQuery1 = (phone, type)=>{
+    return `?phone=${phone}&ctype=${type}`;
 };
 const betweenDate = (startDate, endDate, checkDate)=>{
     let cd;
@@ -3177,6 +3177,6 @@ class InputPhoneNumber1 {
     }
 }
 export { createQRImage1 as createQRImage };
-export { createAPI1 as createAPI };
+export { createQuery1 as createQuery };
 export { StatusManager1 as StatusManager };
 export { InputPhoneNumber1 as InputPhoneNumber };

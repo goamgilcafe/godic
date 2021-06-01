@@ -7,7 +7,7 @@
         "priceLabel": "1000원 할인",
         "start": "2021-05-01",
         "end": "2021-05-31",
-        "active": true
+        "deactivated": false
     },
     "family-event-c": {
         "img": "./images/family-event.png",
@@ -17,6 +17,26 @@
         "priceLabel": "1000원 할인",
         "start": "2021-05-01",
         "end": "2021-05-31",
-        "active": true
+        "deactivated": false
+    },
+    "1stani-event-a": {
+        "img": "./images/first-ani.png",
+        "type": "fani-a",
+        "label": "아메리카노 1 플러스 1 쿠폰",
+        "price": 0,
+        "priceLabel": "",
+        "start": "2021-06-01",
+        "end": "2021-06-30",
+        "deactivated": false
+    },
+    "1stani-event-i": {
+        "img": "./images/first-ani.png",
+        "type": "fani-i",
+        "label": "아이스티 1 플러스 1 쿠폰",
+        "price": 0,
+        "priceLabel": "",
+        "start": "2021-06-01",
+        "end": "2021-06-30",
+        "deactivated": false
     }
 }

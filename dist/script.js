@@ -1,3 +1,5 @@
+import { createQRImage, createQuery, StatusManager, InputPhoneNumber } from './main.js';
+
 document.addEventListener('DOMContentLoaded', function () {
     const i = document.getElementById('ph-input');
     const s = document.getElementById('ph-submit');
@@ -30,16 +32,17 @@ document.addEventListener('DOMContentLoaded', function () {
     const showQRcode = () => {
         textl.innerHTML = statusMan.couponName;
         container.appendChild(textl);
-        const api = createAPI(ipn.value, statusMan.couponType);
-        const qrf = async (api) => {
-            const QRImg = await createQRImage('http://172.30.1.23:5000/' + api);
+        const query = createQuery(ipn.value, statusMan.couponType);
+        const qrf = async (query) => {
+            const QRImg = await createQRImage('http://172.30.1.23:5500/' + query);
             container.appendChild(QRImg);
             qr = QRImg;
             lc.style.display = 'none'
         }
-        qrf(api);
+        qrf(query);
         window.scrollTo(0, document.body.scrollHeight);
     }
+    
     const hideQRcode = () => {
         container.removeChild(textl);
         container.removeChild(qr);
